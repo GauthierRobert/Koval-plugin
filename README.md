@@ -20,14 +20,15 @@ AI training planning for cyclists, runners, swimmers and triathletes. Bundles th
 
 ## Setup
 
-The plugin connects to a remote MCP server (the Koval backend). Set these environment variables before launching Claude Code:
+The plugin connects to a remote MCP server (the Koval backend) and authenticates via **OAuth 2.1 with PKCE** — no manual token issuance. On first use, Claude Code discovers `/.well-known/oauth-protected-resource`, dynamically registers itself (RFC 7591), opens your browser to the Koval login page, and stores the resulting access token.
 
-| Variable          | Default                          | Description                                            |
-| ----------------- | -------------------------------- | ------------------------------------------------------ |
-| `KOVAL_MCP_URL`   | `https://api.koval.app/mcp/sse`  | MCP endpoint of your Koval deployment.                 |
-| `KOVAL_API_TOKEN` | _(required)_                     | Personal access token from your Koval profile → API.   |
+Optional override:
 
-Generate a token from your Koval profile page once the API token feature is enabled in the backend.
+| Variable        | Default                         | Description                                |
+| --------------- | ------------------------------- | ------------------------------------------ |
+| `KOVAL_MCP_URL` | `https://api.koval.app/mcp/sse` | MCP endpoint of your Koval deployment. Override to point at staging or a self-hosted instance. |
+
+You only need a Koval account (sign in with Strava or Google). The first MCP request triggers the OAuth consent flow automatically.
 
 ## What's inside
 
