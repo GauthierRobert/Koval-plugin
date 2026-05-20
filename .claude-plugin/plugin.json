@@ -1,7 +1,7 @@
 {
   "name": "koval-training",
   "description": "AI training planning for cyclists, runners, swimmers and triathletes — connects Claude to your Koval Training Planner account for workouts, plans, schedules, analytics, coaching and clubs.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "author": {
     "name": "Gauthier Robert",
     "email": "gauthier.robert2@gmail.com"
