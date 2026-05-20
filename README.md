@@ -2,6 +2,13 @@
 
 AI training planning for cyclists, runners, swimmers and triathletes. Bundles the **Koval MCP connector** with two role-scoped end-user skills (`koval-athlete`, `koval-coach`) so Claude routes every training request to the right workflow on your Koval account.
 
+## Screenshots
+
+<!-- TODO: replace with real screenshots before tagging v1.0.0 -->
+- _Athlete view_ — analyse a ride, ask for a plan: `docs/screenshots/athlete.png`
+- _Coach view_ — weekly review across athletes: `docs/screenshots/coach.png`
+- _OAuth consent_ — first-launch browser login: `docs/screenshots/oauth.png`
+
 ## Install
 
 ### From this repo (development)
@@ -53,6 +60,15 @@ node plugin/build-plugin.mjs
 ```
 
 The build merges `../skills/_shared/` into every skill, exactly like `../skills/package-skills.mjs` does for the Claude Desktop ZIPs.
+
+## Privacy & data
+
+The plugin talks to a remote MCP server you control (default: `https://api.koval.app`). When you authorise the plugin:
+
+- **What is sent**: prompts, tool arguments, and OAuth credentials for your Koval account. Tool calls fetch and mutate the same data the Koval web app does (trainings, plans, sessions, club content). No conversation content is sent to third parties beyond Koval and Anthropic.
+- **What is stored on Koval servers**: tool-call audit logs, chat memory (TTL configurable, default 90 days), and the OAuth client registered by your Claude Code instance.
+- **Revoking access**: sign in at https://koval.app → Profile → Connected apps → revoke the `Claude Code` client. Subsequent MCP calls will return `401` and prompt re-authentication.
+- **Self-hosting**: point `KOVAL_MCP_URL` at your own Koval deployment to keep all data within your infrastructure.
 
 ## Publishing to Anthropic's community marketplace
 

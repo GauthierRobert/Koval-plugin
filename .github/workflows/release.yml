@@ -1,0 +1,99 @@
+name: Release
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: 'Version bump'
+        required: true
+        default: 'patch'
+        type: choice
+        options: [patch, minor, major]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Bump version, tag, and publish release
+    runs-on: ubuntu-latest
+    if: "!startsWith(github.event.head_commit.message, 'chore(release):')"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Bump plugin.json version
+        id: bump
+        run: |
+          BUMP="${{ github.event.inputs.bump || 'patch' }}"
+          CURRENT=$(node -p "require('./.claude-plugin/plugin.json').version")
+          IFS='.' read -r MAJ MIN PAT <<< "$CURRENT"
+          case "$BUMP" in
+            major) MAJ=$((MAJ+1)); MIN=0; PAT=0 ;;
+            minor) MIN=$((MIN+1)); PAT=0 ;;
+            patch) PAT=$((PAT+1)) ;;
+          esac
+          NEXT="$MAJ.$MIN.$PAT"
+          node -e "
+            const fs=require('fs');
+            const p='./.claude-plugin/plugin.json';
+            const j=JSON.parse(fs.readFileSync(p,'utf8'));
+            j.version='$NEXT';
+            fs.writeFileSync(p, JSON.stringify(j,null,2)+'\n');
+          "
+          echo "current=$CURRENT" >> "$GITHUB_OUTPUT"
+          echo "next=$NEXT"       >> "$GITHUB_OUTPUT"
+          echo "tag=v$NEXT"       >> "$GITHUB_OUTPUT"
+
+      - name: Update CHANGELOG.md
+        run: |
+          NEXT="${{ steps.bump.outputs.next }}"
+          TODAY=$(date -u +%Y-%m-%d)
+          if grep -q "^## \[Unreleased\]" CHANGELOG.md; then
+            sed -i "0,/^## \[Unreleased\]/s//## [Unreleased]\n\n## [$NEXT] - $TODAY/" CHANGELOG.md
+          else
+            printf "## [%s] - %s\n\n_Automated release._\n\n%s" "$NEXT" "$TODAY" "$(cat CHANGELOG.md)" > CHANGELOG.md
+          fi
+
+      - name: Commit, tag, push
+        run: |
+          TAG="${{ steps.bump.outputs.tag }}"
+          git add .claude-plugin/plugin.json CHANGELOG.md
+          git commit -m "chore(release): $TAG"
+          git tag -a "$TAG" -m "Release $TAG"
+          git push origin HEAD:main
+          git push origin "$TAG"
+
+      - name: Extract changelog notes for release body
+        id: notes
+        run: |
+          NEXT="${{ steps.bump.outputs.next }}"
+          awk -v ver="$NEXT" '
+            $0 ~ "^## \\[" ver "\\]" { p=1; next }
+            p && /^## \[/ { exit }
+            p { print }
+          ' CHANGELOG.md > release-notes.md
+          if [ ! -s release-notes.md ]; then
+            echo "Automated release of v$NEXT." > release-notes.md
+          fi
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.bump.outputs.tag }}
+          name: ${{ steps.bump.outputs.tag }}
+          body_path: release-notes.md
