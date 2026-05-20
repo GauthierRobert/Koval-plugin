@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "koval": {
+      "type": "http",
+      "url": "${KOVAL_MCP_URL:-https://api.koval.app/mcp/sse}",
+      "headers": {
+        "Authorization": "Bearer ${KOVAL_API_TOKEN}"
+      }
+    }
+  }
+}

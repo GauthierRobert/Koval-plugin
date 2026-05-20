@@ -1,0 +1,62 @@
+---
+name: koval-athlete-profile
+description: Personalised training preferences for <Athlete Name>. Loaded automatically by every workflow under the koval-athlete skill (onboarding, zone-setup, analyze-last-ride, form-check, power-curve-report, find-workout, create-workout, plan-my-week, prep-race) so generated plans match this athlete's real-world availability, goals, recovery rules and voice. Re-run onboarding to update.
+---
+
+# Athlete Profile — <Athlete Name>
+
+_Last updated: <YYYY-MM-DD>_
+
+## Identity
+- **Sports:** <…>
+- **Level:** <beginner / intermediate / competitive / elite>
+- **Age / category:** <…>
+- **Coached by:** <coach name | self-coached>
+
+## Goals
+- **3-month focus:** <…>
+- **A-priority event:** <name, date>
+- **Definition of a good week:** <…>
+
+## Weekly availability
+- **Hours / week:** <range>
+- **Available days:** <Mon, Tue, …>
+- **Long session day(s):** <…>
+- **Rest day(s):** <…>
+- **Max session length:** weekday <hh:mm> · weekend <hh:mm>
+- **Time of day:** <morning / lunch / evening>
+
+## Workout style
+- **Training method:** <one of: norwegian / polarized / pyramidal / sweet-spot / maffetone / lydiard / daniels / block-periodization / none> — see `training-methods.md` for the canonical menu and per-method playbooks. If set, workflows read `training-methods/<slug>.md` and apply its prescription rules on top of every workout / plan generated for this athlete.
+- **Environment:** <indoor / outdoor / mix per sport>
+- **Structure preference:** <structured intervals / free / mix>
+- **Favourite session types:** <…>
+- **Avoid:** <…>
+
+## Body, recovery & constraints
+- **Injuries / limitations:** <…>
+- **Forbidden efforts:** <…>
+- **Sleep baseline:** <good / variable / poor>
+- **Logs after sessions:** <RPE / sleep / HRV / notes>
+
+## Targets & data
+- **Prescription unit:** <% FTP / watts / HR / RPE / pace>
+- **Load metric:** <TSS / hours / km>
+- **Default zone system:** <name> (id: <…>)
+
+## Voice & communication
+- **Description style:** <terse / detailed / motivational / data>
+- **Language:** <…>
+- **Coaching tone:** <firm / encouraging / data-driven / playful>
+- **Never include:** <list>
+
+## How other workflows should use this
+Any koval-athlete workflow that creates a `Training`, `ScheduledWorkout` or `Plan`, or that proposes a week / taper / workout selection, MUST:
+1. Read this file first.
+2. Only schedule sessions on **available days**; respect **rest days** and **long session day**.
+3. Never exceed **max session length** for the weekday/weekend in question.
+4. Honour the **never include** list and **forbidden efforts** absolutely.
+5. Use the **prescription unit**, **load metric** and **default zone system** specified here.
+6. If a **training method** is set, also read `training-methods/<slug>.md` and apply its rules (intensity caps, hallmark sessions, distribution, anti-fit sessions).
+7. Write descriptions in the configured **style**, **language** and **tone**.
+8. Bias intensity decisions on the **sleep baseline** (poor sleep → push hard sessions back).
